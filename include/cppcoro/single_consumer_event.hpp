@@ -6,7 +6,14 @@
 #define CPPCORO_SINGLE_CONSUMER_EVENT_HPP_INCLUDED
 
 #include <atomic>
+#if __has_include(<experimental/coroutine>)
 #include <experimental/coroutine>
+namespace stde = std::experimental;
+#else
+
+#include <coroutine>
+namespace stde = std;
+#endif
 
 namespace cppcoro
 {
@@ -84,7 +91,7 @@ namespace cppcoro
 					return m_event.is_set();
 				}
 
-				bool await_suspend(std::experimental::coroutine_handle<> awaiter)
+				bool await_suspend(stde::coroutine_handle<> awaiter)
 				{
 					m_event.m_awaiter = awaiter;
 
@@ -120,7 +127,7 @@ namespace cppcoro
 		// by encoding 'not_set' as 0 (nullptr), 'set' as 1 and
 		// 'not_set_consumer_waiting' as a coroutine handle pointer.
 		std::atomic<state> m_state;
-		std::experimental::coroutine_handle<> m_awaiter;
+		stde::coroutine_handle<> m_awaiter;
 
 	};
 }

@@ -5,7 +5,15 @@
 #ifndef CPPCORO_GENERATOR_HPP_INCLUDED
 #define CPPCORO_GENERATOR_HPP_INCLUDED
 
+#if __has_include(<experimental/coroutine>)
 #include <experimental/coroutine>
+namespace stde = std::experimental;
+#else
+
+#include <coroutine>
+namespace stde = std;
+#endif
+
 #include <type_traits>
 #include <utility>
 #include <exception>
@@ -32,19 +40,19 @@ namespace cppcoro
 
 			generator<T> get_return_object() noexcept;
 
-			constexpr std::experimental::suspend_always initial_suspend() const { return {}; }
-			constexpr std::experimental::suspend_always final_suspend() const { return {}; }
+			constexpr stde::suspend_always initial_suspend() const { return {}; }
+			constexpr stde::suspend_always final_suspend() const { return {}; }
 
 			template<
 				typename U = T,
 				std::enable_if_t<!std::is_rvalue_reference<U>::value, int> = 0>
-			std::experimental::suspend_always yield_value(std::remove_reference_t<T>& value) noexcept
+			stde::suspend_always yield_value(std::remove_reference_t<T>& value) noexcept
 			{
 				m_value = std::addressof(value);
 				return {};
 			}
 
-			std::experimental::suspend_always yield_value(std::remove_reference_t<T>&& value) noexcept
+			stde::suspend_always yield_value(std::remove_reference_t<T>&& value) noexcept
 			{
 				m_value = std::addressof(value);
 				return {};
@@ -66,7 +74,7 @@ namespace cppcoro
 
 			// Don't allow any use of 'co_await' inside the generator coroutine.
 			template<typename U>
-			std::experimental::suspend_never await_transform(U&& value) = delete;
+			stde::suspend_never await_transform(U&& value) = delete;
 
 			void rethrow_if_exception()
 			{
@@ -88,7 +96,7 @@ namespace cppcoro
 		template<typename T>
 		class generator_iterator
 		{
-			using coroutine_handle = std::experimental::coroutine_handle<generator_promise<T>>;
+			using coroutine_handle = stde::coroutine_handle<generator_promise<T>>;
 
 		public:
 
@@ -223,11 +231,11 @@ namespace cppcoro
 
 		friend class detail::generator_promise<T>;
 
-		explicit generator(std::experimental::coroutine_handle<promise_type> coroutine) noexcept
+		explicit generator(stde::coroutine_handle<promise_type> coroutine) noexcept
 			: m_coroutine(coroutine)
 		{}
 
-		std::experimental::coroutine_handle<promise_type> m_coroutine;
+		stde::coroutine_handle<promise_type> m_coroutine;
 
 	};
 
@@ -242,7 +250,7 @@ namespace cppcoro
 		template<typename T>
 		generator<T> generator_promise<T>::get_return_object() noexcept
 		{
-			using coroutine_handle = std::experimental::coroutine_handle<generator_promise<T>>;
+			using coroutine_handle = stde::coroutine_handle<generator_promise<T>>;
 			return generator<T>{ coroutine_handle::from_promise(*this) };
 		}
 	}

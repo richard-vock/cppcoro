@@ -18,7 +18,14 @@
 #include <cstdint>
 #include <cassert>
 
+#if __has_include(<experimental/coroutine>)
 #include <experimental/coroutine>
+namespace stde = std::experimental;
+#else
+
+#include <coroutine>
+namespace stde = std;
+#endif
 
 namespace cppcoro
 {
@@ -36,8 +43,8 @@ namespace cppcoro
 
 #if CPPCORO_COMPILER_SUPPORTS_SYMMETRIC_TRANSFER
 				template<typename PROMISE>
-				std::experimental::coroutine_handle<> await_suspend(
-					std::experimental::coroutine_handle<PROMISE> coro) noexcept
+				stde::coroutine_handle<> await_suspend(
+					stde::coroutine_handle<PROMISE> coro) noexcept
 				{
 					return coro.promise().m_continuation;
 				}
@@ -49,7 +56,7 @@ namespace cppcoro
 				// were crashing under x86 optimised builds.
 				template<typename PROMISE>
 				CPPCORO_NOINLINE
-				void await_suspend(std::experimental::coroutine_handle<PROMISE> coroutine)
+				void await_suspend(stde::coroutine_handle<PROMISE> coroutine)
 				{
 					task_promise_base& promise = coroutine.promise();
 
@@ -79,7 +86,7 @@ namespace cppcoro
 
 			auto initial_suspend() noexcept
 			{
-				return std::experimental::suspend_always{};
+				return stde::suspend_always{};
 			}
 
 			auto final_suspend() noexcept
@@ -88,12 +95,12 @@ namespace cppcoro
 			}
 
 #if CPPCORO_COMPILER_SUPPORTS_SYMMETRIC_TRANSFER
-			void set_continuation(std::experimental::coroutine_handle<> continuation) noexcept
+			void set_continuation(stde::coroutine_handle<> continuation) noexcept
 			{
 				m_continuation = continuation;
 			}
 #else
-			bool try_set_continuation(std::experimental::coroutine_handle<> continuation)
+			bool try_set_continuation(stde::coroutine_handle<> continuation)
 			{
 				m_continuation = continuation;
 				return !m_state.exchange(true, std::memory_order_acq_rel);
@@ -102,7 +109,7 @@ namespace cppcoro
 
 		private:
 
-			std::experimental::coroutine_handle<> m_continuation;
+			stde::coroutine_handle<> m_continuation;
 
 #if !CPPCORO_COMPILER_SUPPORTS_SYMMETRIC_TRANSFER
 			// Initially false. Set to true when either a continuation is registered
@@ -292,9 +299,9 @@ namespace cppcoro
 
 		struct awaitable_base
 		{
-			std::experimental::coroutine_handle<promise_type> m_coroutine;
+			stde::coroutine_handle<promise_type> m_coroutine;
 
-			awaitable_base(std::experimental::coroutine_handle<promise_type> coroutine) noexcept
+			awaitable_base(stde::coroutine_handle<promise_type> coroutine) noexcept
 				: m_coroutine(coroutine)
 			{}
 
@@ -304,14 +311,14 @@ namespace cppcoro
 			}
 
 #if CPPCORO_COMPILER_SUPPORTS_SYMMETRIC_TRANSFER
-			std::experimental::coroutine_handle<> await_suspend(
-				std::experimental::coroutine_handle<> awaitingCoroutine) noexcept
+			stde::coroutine_handle<> await_suspend(
+				stde::coroutine_handle<> awaitingCoroutine) noexcept
 			{
 				m_coroutine.promise().set_continuation(awaitingCoroutine);
 				return m_coroutine;
 			}
 #else
-			bool await_suspend(std::experimental::coroutine_handle<> awaitingCoroutine) noexcept
+			bool await_suspend(stde::coroutine_handle<> awaitingCoroutine) noexcept
 			{
 				// NOTE: We are using the bool-returning version of await_suspend() here
 				// to work around a potential stack-overflow issue if a coroutine
@@ -341,7 +348,7 @@ namespace cppcoro
 			: m_coroutine(nullptr)
 		{}
 
-		explicit task(std::experimental::coroutine_handle<promise_type> coroutine)
+		explicit task(stde::coroutine_handle<promise_type> coroutine)
 			: m_coroutine(coroutine)
 		{}
 
@@ -446,7 +453,7 @@ namespace cppcoro
 
 	private:
 
-		std::experimental::coroutine_handle<promise_type> m_coroutine;
+		stde::coroutine_handle<promise_type> m_coroutine;
 
 	};
 
@@ -455,18 +462,18 @@ namespace cppcoro
 		template<typename T>
 		task<T> task_promise<T>::get_return_object() noexcept
 		{
-			return task<T>{ std::experimental::coroutine_handle<task_promise>::from_promise(*this) };
+			return task<T>{ stde::coroutine_handle<task_promise>::from_promise(*this) };
 		}
 
 		inline task<void> task_promise<void>::get_return_object() noexcept
 		{
-			return task<void>{ std::experimental::coroutine_handle<task_promise>::from_promise(*this) };
+			return task<void>{ stde::coroutine_handle<task_promise>::from_promise(*this) };
 		}
 
 		template<typename T>
 		task<T&> task_promise<T&>::get_return_object() noexcept
 		{
-			return task<T&>{ std::experimental::coroutine_handle<task_promise>::from_promise(*this) };
+			return task<T&>{ stde::coroutine_handle<task_promise>::from_promise(*this) };
 		}
 	}
 

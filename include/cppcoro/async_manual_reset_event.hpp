@@ -5,7 +5,15 @@
 #ifndef CPPCORO_ASYNC_MANUAL_RESET_EVENT_HPP_INCLUDED
 #define CPPCORO_ASYNC_MANUAL_RESET_EVENT_HPP_INCLUDED
 
+#if __has_include(<experimental/coroutine>)
 #include <experimental/coroutine>
+namespace stde = std::experimental;
+#else
+
+#include <coroutine>
+namespace stde = std;
+#endif
+
 #include <atomic>
 #include <cstdint>
 
@@ -87,7 +95,7 @@ namespace cppcoro
 		explicit async_manual_reset_event_operation(const async_manual_reset_event& event) noexcept;
 
 		bool await_ready() const noexcept;
-		bool await_suspend(std::experimental::coroutine_handle<> awaiter) noexcept;
+		bool await_suspend(stde::coroutine_handle<> awaiter) noexcept;
 		void await_resume() const noexcept {}
 
 	private:
@@ -96,7 +104,7 @@ namespace cppcoro
 
 		const async_manual_reset_event& m_event;
 		async_manual_reset_event_operation* m_next;
-		std::experimental::coroutine_handle<> m_awaiter;
+		stde::coroutine_handle<> m_awaiter;
 
 	};
 }

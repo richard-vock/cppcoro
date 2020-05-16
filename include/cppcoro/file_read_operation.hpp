@@ -11,7 +11,15 @@
 
 #include <atomic>
 #include <optional>
+#if __has_include(<experimental/coroutine>)
 #include <experimental/coroutine>
+namespace stde = std::experimental;
+#else
+
+#include <coroutine>
+namespace stde = std;
+#endif
+
 
 #if CPPCORO_OS_WINNT
 # include <cppcoro/detail/win32.hpp>

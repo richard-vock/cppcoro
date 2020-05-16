@@ -11,7 +11,14 @@
 #include <thread>
 #include <vector>
 #include <mutex>
+#if __has_include(<experimental/coroutine>)
 #include <experimental/coroutine>
+namespace stde = std::experimental;
+#else
+
+#include <coroutine>
+namespace stde = std;
+#endif
 
 namespace cppcoro
 {
@@ -38,7 +45,7 @@ namespace cppcoro
 			schedule_operation(static_thread_pool* tp) noexcept : m_threadPool(tp) {}
 
 			bool await_ready() noexcept { return false; }
-			void await_suspend(std::experimental::coroutine_handle<> awaitingCoroutine) noexcept;
+			void await_suspend(stde::coroutine_handle<> awaitingCoroutine) noexcept;
 			void await_resume() noexcept {}
 
 		private:
@@ -46,7 +53,7 @@ namespace cppcoro
 			friend class static_thread_pool;
 
 			static_thread_pool* m_threadPool;
-			std::experimental::coroutine_handle<> m_awaitingCoroutine;
+			stde::coroutine_handle<> m_awaitingCoroutine;
 			schedule_operation* m_next;
 
 		};
